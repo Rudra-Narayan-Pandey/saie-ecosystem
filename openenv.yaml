@@ -28,7 +28,7 @@ tasks:
     max_steps: 30
     difficulty: easy
     entrypoint: easy.py
-    grader: graders:grade_easy
+    grader: graders.grade_easy
 
   - id: medium
     description: >
@@ -37,7 +37,7 @@ tasks:
     max_steps: 50
     difficulty: medium
     entrypoint: medium.py
-    grader: graders:grade_medium
+    grader: graders.grade_medium
 
   - id: hard
     description: >
@@ -46,7 +46,7 @@ tasks:
     max_steps: 80
     difficulty: hard
     entrypoint: hard.py
-    grader: graders:grade_hard
+    grader: graders.grade_hard
 
 observation_space:
   type: structured
