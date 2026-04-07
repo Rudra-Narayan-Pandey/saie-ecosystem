@@ -1,0 +1,16 @@
+[project]
+name = "saie-ecosystem"
+version = "0.1.0"
+description = "Self-Healing AI Ecosystem Simulator"
+authors = [{name = "Rudra Narayan Pandey"}]
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "openai",
+    "pydantic",
+    "PyYAML"
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
