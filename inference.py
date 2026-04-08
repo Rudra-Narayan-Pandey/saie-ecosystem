@@ -37,13 +37,13 @@ GRADER_MAP = {
 # ──────────────────────────────────────────────
 API_BASE_URL = os.environ.get("API_BASE_URL", "https://api.openai.com/v1")
 MODEL_NAME   = os.environ.get("MODEL_NAME", "gpt-4o-mini")
-HF_TOKEN     = os.environ.get("HF_TOKEN", "")
+API_KEY      = os.environ.get("API_KEY", "")
 TASK         = os.environ.get("TASK", "easy")
 MAX_RETRIES  = 2
 
 client = OpenAI(
     base_url=API_BASE_URL,
-    api_key=HF_TOKEN or "dummy",
+    api_key=API_KEY
 )
 
 
@@ -302,8 +302,8 @@ def run_single_task(task_name: str):
         step += 1
 
         # 🔥 safer (no API failure)
-        action = _intelligent_fallback(obs)
-        error_str = "null"
+        action, error = query_model(obs)
+        error_str = "null" if error is None else error
 
         try:
             obs, reward_obj, done, info = env.step(action)
