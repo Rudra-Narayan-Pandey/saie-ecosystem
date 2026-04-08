@@ -29,7 +29,7 @@ tasks:
     difficulty: easy
     entrypoint: easy.py
     run_fn: easy:run_task
-    grader_fn: graders:grade_easy
+    grader: graders:grade_easy
 
   - id: medium
     description: >
@@ -39,7 +39,7 @@ tasks:
     difficulty: medium
     entrypoint: medium.py
     run_fn: medium:run_task
-    grader_fn: graders:grade_medium
+    grader: graders:grade_medium
 
   - id: hard
     description: >
@@ -49,7 +49,7 @@ tasks:
     difficulty: hard
     entrypoint: hard.py
     run_fn: hard:run_task
-    grader_fn: graders:grade_hard
+    grader: graders:grade_hard
 
 observation_space:
   type: structured
