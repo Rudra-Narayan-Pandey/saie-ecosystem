@@ -11,7 +11,7 @@ Environment variables:
 Strict output format:
   [START] task=<task> env=saie model=<model>
   [STEP]  step=<n> action=<action> reward=<float> done=<true/false> error=<null|msg>
-  [END]   success=<true/false> steps=<n> rewards=<r1,r2,...>
+  [END]   success=<true/false> steps=<n> score=<grader_score> rewards=<r1,r2,...>
 """
 from __future__ import annotations
 
@@ -23,6 +23,13 @@ from openai import OpenAI
 
 from env import SAIEEnvironment
 from models import Action, Observation
+from graders import grade_easy, grade_medium, grade_hard
+
+GRADER_MAP = {
+    "easy":   grade_easy,
+    "medium": grade_medium,
+    "hard":   grade_hard,
+}
 
 
 # ──────────────────────────────────────────────
@@ -284,6 +291,7 @@ def main() -> None:
     env = SAIEEnvironment(task=TASK)
     obs = env.reset()
 
+    observations: List[Observation] = [obs]
     rewards: List[float] = []
     step = 0
 
@@ -298,6 +306,7 @@ def main() -> None:
 
         try:
             obs, reward_obj, done, info = env.step(action)
+            observations.append(obs)
             reward_val = float(reward_obj.total)      # strict float, never object
             rewards.append(reward_val)
             done_str = "true" if done else "false"
@@ -320,12 +329,14 @@ def main() -> None:
     final_health = obs.system_health if obs else 0.0
     success = final_health >= 0.5
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
-    # Strict [END] format
-    score = min(max(obs.system_health, 0.0), 1.0)
+
+    # Call the task grader with full observation history
+    grader_fn = GRADER_MAP.get(TASK, grade_easy)
+    grader_score = grader_fn(observations)
 
     print(
         f"[END] success={'true' if success else 'false'} "
-        f"steps={step} score={score:.2f} rewards={rewards_str}",
+        f"steps={step} score={grader_score:.4f} rewards={rewards_str}",
         flush=True,
     )
 
