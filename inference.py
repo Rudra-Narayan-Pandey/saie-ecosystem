@@ -38,6 +38,8 @@ GRADER_MAP = {
 API_BASE_URL = os.environ.get("API_BASE_URL", "https://api.openai.com/v1")
 MODEL_NAME   = os.environ.get("MODEL_NAME", "gpt-4o-mini")
 API_KEY      = os.environ.get("API_KEY", "")
+if not API_KEY:
+    print("[WARNING] API_KEY not found, using fallback mode", flush=True)
 TASK         = os.environ.get("TASK", "easy")
 MAX_RETRIES  = 2
 
@@ -277,11 +279,12 @@ def query_model(obs: Observation) -> Tuple[Action, Optional[str]]:
             text = response.choices[0].message.content or ""
             action = parse_action(text, obs)
             return action, None
+
         except Exception as exc:
             if attempt == MAX_RETRIES:
                 return _intelligent_fallback(obs), str(exc)
-    return _intelligent_fallback(obs), "max_retries_exceeded"
 
+    return _intelligent_fallback(obs), "max_retries_exceeded"
 
 # ──────────────────────────────────────────────
 # Main
