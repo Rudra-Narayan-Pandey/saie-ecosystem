@@ -45,7 +45,9 @@ MAX_RETRIES  = 2
 
 client = OpenAI(
     base_url=API_BASE_URL,
-    api_key=API_KEY
+    api_key=API_KEY if API_KEY else "fallback-no-key",
+    max_retries=0,          # disable internal retries — we handle retries ourselves
+    timeout=15.0,           # fail fast instead of hanging on network issues
 )
 
 
@@ -264,7 +266,12 @@ def parse_action(response_text: str, obs: Observation) -> Action:
 
 
 def query_model(obs: Observation) -> Tuple[Action, Optional[str]]:
+    # Skip API call entirely if no key is configured — use heuristic fallback
+    if not API_KEY:
+        return _intelligent_fallback(obs), None
+
     prompt = obs_to_prompt(obs)
+    last_exc: Optional[str] = None
     for attempt in range(MAX_RETRIES + 1):
         try:
             response = client.chat.completions.create(
@@ -281,10 +288,12 @@ def query_model(obs: Observation) -> Tuple[Action, Optional[str]]:
             return action, None
 
         except Exception as exc:
-            if attempt == MAX_RETRIES:
-                return _intelligent_fallback(obs), str(exc)
+            last_exc = str(exc)
+            # On auth errors (401) don't bother retrying
+            if "401" in last_exc or "api_key" in last_exc.lower() or "authentication" in last_exc.lower():
+                return _intelligent_fallback(obs), last_exc
 
-    return _intelligent_fallback(obs), "max_retries_exceeded"
+    return _intelligent_fallback(obs), last_exc or "max_retries_exceeded"
 
 # ──────────────────────────────────────────────
 # Main
